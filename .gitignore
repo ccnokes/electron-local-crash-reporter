@@ -1,0 +1,7 @@
+.git
+node_modules
+mini-breakpad-server/pool
+.idea
+
+#commit tests when they're ready (and written)
+test

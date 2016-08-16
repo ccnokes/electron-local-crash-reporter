@@ -1,0 +1,24 @@
+{
+  "name": "electron-local-crash-reporter",
+  "version": "1.0.0",
+  "description": "Breakpad crash report server",
+  "main": "index.js",
+  "scripts": {
+    "test": "electron test/index.js"
+  },
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "adm-zip": "^0.4.7",
+    "bluebird": "^3.4.1",
+    "debug": "^2.2.0",
+    "mini-breakpad-server": "git+https://github.com/electron/mini-breakpad-server.git",
+    "pkg-up": "^1.0.0",
+    "request": "^2.74.0",
+    "rimraf": "^2.5.4",
+    "semver": "^5.3.0"
+  },
+  "devDependencies": {
+    "electron-prebuilt": "^1.2.8"
+  }
+}
