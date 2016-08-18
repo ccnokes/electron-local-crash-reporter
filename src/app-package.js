@@ -1,5 +1,4 @@
 const path = require('path');
-const pkgUp = require('pkg-up');
 
 //traverse up module tree till we find the root JS file
 function getBaseParent(module) {
@@ -12,6 +11,7 @@ function getBaseParent(module) {
 }
 
 const parentDir = path.dirname(getBaseParent(module).filename);
-const pkgPath = pkgUp.sync(parentDir);
+const pkgPath = path.join(parentDir, 'package.json');
+const pkg = require(pkgPath);
 
-module.exports = require(pkgPath);
+module.exports = pkg;

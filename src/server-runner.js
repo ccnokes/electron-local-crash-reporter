@@ -1,63 +1,41 @@
 const path = require('path');
 const fs = require('fs');
-const { fork, spawn } = require('child_process');
+const Promise = require('bluebird');
+const { fork } = require('child_process');
 const syms = require('./symbols');
 const debug = require('./debug');
-const breakpadPath = path.join(__dirname, '../mini-breakpad-server');
+const breakpadModules = require('./breakpad-modules');
+
 let proc = null;
+
 
 module.exports = { start, close };
 
-function isNPMInstalled() {
-  try {
-    return fs.readdirSync(path.join(breakpadPath, 'node_modules'))
-        .filter(file => file.indexOf('.') !== 0)
-        .length > 0;
-  } catch(err) {
-    return false;
-  }
-}
-
-function npmInstall() {
-  let install = spawn('npm', ['install', '--production'], {
-    stdio: 'inherit',
-    cwd: breakpadPath
-  });
-
-  install.on('data', data => {
-    console.log(data);
-  });
-
-  install.on('close', () => {
-    debug('close npm install process');
-  });
-
-  install.on('error', err => {
-    debug.error(err);
-  });
-
-  return install;
-}
 
 function start() {
-  debug('starting server');
-
-  if(!isNPMInstalled()) {
-    debug('installing deps');
-    npmInstall();
-  }
+  //the npm hosted version of mini-breakpad-server doesn't work and it has native modules, so we have to run install on it
+  //we don't have to wait for the symbols to be done downloading to start the server
+  let installPromise = breakpadModules.isInstalled()
+    .then(isInstalled => !isInstalled ? breakpadModules.install() : true)
+    .then(startServer);
 
   //if we don't have any symbols, download them and extract them to the right dir for mini-breakpad-server
   //this also ensures the symbols we have are up to date
-  if(!syms.hasSymbols()) {
-    syms.download();
-  }
+  let symsPromise = syms.hasSymbols()
+    .then(haz => !haz ? syms.download() : true);
+
+  return Promise.all([installPromise, symsPromise])
+    .catch(debug.error);
+}
+
+function startServer() {
+  debug('starting server');
 
   // run the breakpad server in it's own node.js process
   // direct it's stdio to the electron parent processes'
   proc = fork('./lib/app.js', {
     stdio: 'inherit',
-    cwd: breakpadPath
+    cwd: breakpadModules.path
   });
 
   proc.on('close', code => {
@@ -73,7 +51,3 @@ function close() {
   proc && proc.kill();
 }
 
-// kill the child_process on parent process exit
-process.on('exit', () => {
-  close();
-});
