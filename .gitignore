@@ -2,6 +2,7 @@
 node_modules
 mini-breakpad-server/pool
 .idea
+todo.md
 
 #commit tests when they're ready (and written)
 test

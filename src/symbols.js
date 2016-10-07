@@ -1,22 +1,27 @@
 const Promise = require('bluebird');
 const fs = Promise.promisifyAll(require('fs'));
 const path = require('path');
-const request = require('request');
 const semver = require('semver');
 const rimraf = require('rimraf');
-const ADMZip = require('adm-zip');
 const debug = require('./debug');
 
 const rimrafAsync = Promise.promisify(rimraf);
 
 const appPkg = require('./app-package');
-const pkgElectronVersion = (appPkg.devDependencies['electron-prebuilt'] || appPkg.devDependencies['electron-prebuilt-compile']).replace(/\^|~|v/g, '');
+const pkgElectronVersion = getElectronPackageName().replace(/\^|~|v/g, '');
 const downloadUrl = `https://github.com/electron/electron/releases/download/v${pkgElectronVersion}/electron-v${pkgElectronVersion}-${process.platform}-${process.arch}-symbols.zip`;
 
 const poolPath = path.join(__dirname, '../mini-breakpad-server/pool');
 const symbolsPath = path.join(poolPath, 'symbols');
 const extractedFolderName = 'electron.breakpad.syms';
 
+
+function getElectronPackageName() {
+	const devDeps = appPkg.devDependencies;
+	return devDeps['electron-prebuilt'] ||
+		devDeps['electron-prebuilt'] ||
+		devDeps['electron-prebuilt-compile'];
+}
 
 const hasSymbols = Promise.coroutine(function* () {
 	try {
@@ -40,6 +45,7 @@ const hasSymbols = Promise.coroutine(function* () {
 
 const extractZip = Promise.coroutine(function* (zipPath) {
 	debug('extracting symbols to ', poolPath);
+	const ADMZip = require('adm-zip'); //lazy load this
 
 	let zip = new ADMZip(zipPath);
 	zip.extractAllTo(poolPath, true);
@@ -56,6 +62,7 @@ function download() {
 	return new Promise((res, rej) => {
 		const zipPath = path.join(__dirname, 'syms.zip');
 		debug('download symbols zip file from: ', downloadUrl);
+		const request = require('request'); //lazy load this
 
 		request.get(downloadUrl)
 			.pipe(fs.createWriteStream(zipPath)

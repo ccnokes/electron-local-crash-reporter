@@ -1,5 +1,5 @@
 const { crashReporter } = require('electron');
-const crashServer = require('./server-runner');
+const crashServer = require('./crash-server');
 const appPkg = require('./app-package');
 
 function start() {
@@ -14,8 +14,7 @@ function start() {
 }
 
 // kill the child_process on parent process exit
-process.on('exit', () => {
-	crashServer.close();
-});
+// this doesn't get called if the process crashes, usually
+process.on('exit', crashServer.close);
 
 module.exports = { start, close: crashServer.close };

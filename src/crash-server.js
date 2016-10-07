@@ -1,6 +1,5 @@
 const path = require('path');
 const fs = require('fs');
-const Promise = require('bluebird');
 const { fork } = require('child_process');
 const syms = require('./symbols');
 const debug = require('./debug');
@@ -33,9 +32,10 @@ function startServer() {
 
   // run the breakpad server in it's own node.js process
   // direct it's stdio to the electron parent processes'
-  proc = fork('./lib/app.js', {
+  proc = fork('./src/breakpad-wrapper.js', {
     stdio: 'inherit',
-    cwd: breakpadModules.path
+    cwd: './',
+    env: { parentPID: process.pid }
   });
 
   proc.on('close', code => {
@@ -50,4 +50,3 @@ function startServer() {
 function close() {
   proc && proc.kill();
 }
-

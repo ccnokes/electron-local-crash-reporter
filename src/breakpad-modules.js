@@ -7,7 +7,7 @@ const readdir = Promise.promisify(fs.readdir);
 const breakpadPath = path.join(__dirname, '../mini-breakpad-server');
 
 
-module.exports = { isInstalled, install, path: breakpadPath };
+module.exports = { isInstalled, install, breakpadPath };
 
 function isInstalled() {
 	return readdir(path.join(breakpadPath, 'node_modules'))
