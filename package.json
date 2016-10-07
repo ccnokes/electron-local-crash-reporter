@@ -7,7 +7,17 @@
     "test": "electron test/index.js",
     "clear": "rm -rf mini-breakpad-server/pool"
   },
-  "author": "",
+  "author": "Cameron Nokes",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ccnokes/electron-local-crash-reporter"
+  },
+  "keywords": [
+    "electron",
+    "crash",
+    "report",
+    "breakpad"
+  ],
   "license": "MIT",
   "dependencies": {
     "adm-zip": "^0.4.7",
