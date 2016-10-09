@@ -32,7 +32,7 @@ function startServer() {
 
   // run the breakpad server in it's own node.js process
   // direct it's stdio to the electron parent processes'
-  proc = fork('./src/breakpad-wrapper.js', {
+  proc = fork(path.join(__dirname, './breakpad-wrapper.js'), {
     stdio: 'inherit',
     cwd: './',
     env: { parentPID: process.pid }
