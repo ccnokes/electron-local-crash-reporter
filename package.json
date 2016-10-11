@@ -1,6 +1,6 @@
 {
   "name": "electron-local-crash-reporter",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Simplifies running mini-breakpad-server in local development, alongside your electron app.",
   "main": "index.js",
   "scripts": {
