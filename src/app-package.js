@@ -1,14 +1,20 @@
 const path = require('path');
 const fs = require('fs');
 
-function getBaseParent(dir = require.main.filename) {
+function getBaseParent(dir = path.dirname(require.main.filename)) {
 	if(dir.indexOf('node_modules') > -1) {
 		return getBaseParent(path.join(dir, '../'));
 	}
 	else {
 		const pkgPath = path.join(dir, 'package.json');
 		try {
-			return require(pkgPath);
+			const pkg = require(pkgPath);
+			if(!getElectronPkgVersion(pkg)) {
+				throw new Error('Could not find electron version in this package.json, trying up a level.');
+			}
+			else {
+				return pkg;
+			}
 		}
 		catch(error) {
 			return getBaseParent(path.join(dir, '../'));
@@ -16,4 +22,15 @@ function getBaseParent(dir = require.main.filename) {
 	}
 }
 
-module.exports = getBaseParent();
+function getElectronPkgVersion(pkg) {
+	const devDeps = pkg.devDependencies;
+	return devDeps['electron-prebuilt'] ||
+		devDeps['electron-prebuilt'] ||
+		devDeps['electron-prebuilt-compile'];
+}
+
+module.exports = {
+	appPkg: getBaseParent(),
+	getBaseParent,
+	getElectronPkgVersion
+};

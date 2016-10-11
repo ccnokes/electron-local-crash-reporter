@@ -1,6 +1,6 @@
 const { crashReporter } = require('electron');
 const crashServer = require('./crash-server');
-const appPkg = require('./app-package');
+const { appPkg } = require('./app-package');
 
 function start() {
 	crashReporter.start({

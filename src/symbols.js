@@ -7,8 +7,8 @@ const debug = require('./debug');
 
 const rimrafAsync = Promise.promisify(rimraf);
 
-const appPkg = require('./app-package');
-const pkgElectronVersion = getElectronPackageName().replace(/\^|~|v/g, '');
+const { appPkg, getElectronPkgVersion } = require('./app-package');
+const pkgElectronVersion = getElectronPkgVersion(appPkg).replace(/\^|~|v/g, '');
 const downloadUrl = `https://github.com/electron/electron/releases/download/v${pkgElectronVersion}/electron-v${pkgElectronVersion}-${process.platform}-${process.arch}-symbols.zip`;
 
 const poolPath = path.join(__dirname, '../mini-breakpad-server/pool');
@@ -16,17 +16,15 @@ const symbolsPath = path.join(poolPath, 'symbols');
 const extractedFolderName = 'electron.breakpad.syms';
 
 
-function getElectronPackageName() {
-	const devDeps = appPkg.devDependencies;
-	return devDeps['electron-prebuilt'] ||
-		devDeps['electron-prebuilt'] ||
-		devDeps['electron-prebuilt-compile'];
-}
-
 const hasSymbols = Promise.coroutine(function* () {
 	try {
 		yield fs.statAsync(symbolsPath);
 		let localVersion = yield fs.readFileAsync(path.join(poolPath, 'version'), 'utf8');
+
+		if(!pkgElectronVersion) {
+			throw new Error(`Can't find electron version from package.json`);
+		}
+
 		// update our symbols if they're different from the package version
 		if(semver.diff(localVersion, pkgElectronVersion)) {
 			yield rimrafAsync(symbolsPath);
