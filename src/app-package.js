@@ -23,10 +23,7 @@ function getBaseParent(dir = path.dirname(require.main.filename)) {
 }
 
 function getElectronPkgVersion(pkg) {
-	const devDeps = pkg.devDependencies;
-	return devDeps['electron-prebuilt'] ||
-		devDeps['electron-prebuilt'] ||
-		devDeps['electron-prebuilt-compile'];
+	return pkg.devDependencies.electron.replace(/\^|~|v/g, '');
 }
 
 module.exports = {

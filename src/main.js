@@ -6,7 +6,7 @@ function start() {
 	crashReporter.start({
 		companyName: 'Local Crash Reporter',
 		productName: appPkg.productName || 'Local Crash Reporter',
-		autoSubmit: true,
+		uploadToServer: true,
 		submitURL: 'http://localhost:1127/post'
 	});
 

@@ -2,46 +2,46 @@ const Promise = require('bluebird');
 const fs = Promise.promisifyAll(require('fs'));
 const path = require('path');
 const semver = require('semver');
-const rimraf = require('rimraf');
 const debug = require('./debug');
-
-const rimrafAsync = Promise.promisify(rimraf);
-
+const rimraf = Promise.promisify(require('rimraf'));
 const { appPkg, getElectronPkgVersion } = require('./app-package');
-const pkgElectronVersion = getElectronPkgVersion(appPkg).replace(/\^|~|v/g, '');
-const downloadUrl = `https://github.com/electron/electron/releases/download/v${pkgElectronVersion}/electron-v${pkgElectronVersion}-${process.platform}-${process.arch}-symbols.zip`;
 
+const pkgElectronVersion = getElectronPkgVersion(appPkg);
+debug(`detected Electron version: ${pkgElectronVersion}`);
+const downloadUrl = `https://github.com/electron/electron/releases/download/v${pkgElectronVersion}/electron-v${pkgElectronVersion}-${process.platform}-${process.arch}-symbols.zip`;
 const poolPath = path.join(__dirname, '../mini-breakpad-server/pool');
 const symbolsPath = path.join(poolPath, 'symbols');
 const extractedFolderName = 'electron.breakpad.syms';
 
-
-const hasSymbols = Promise.coroutine(function* () {
+/**
+ * Check if we have symbols for a version of Electron
+ * @param {String} electronVersion
+ * @returns {Boolean}
+ */
+async function hasSymbols(electronVersion = pkgElectronVersion) {
 	try {
-		yield fs.statAsync(symbolsPath);
-		let localVersion = yield fs.readFileAsync(path.join(poolPath, 'version'), 'utf8');
-
+		await fs.statAsync(symbolsPath);
+		let localVersion = await fs.readFileAsync(path.join(poolPath, 'version'), 'utf8');
 		if(!pkgElectronVersion) {
 			throw new Error(`Can't find electron version from package.json`);
 		}
-
 		// update our symbols if they're different from the package version
-		if(semver.diff(localVersion, pkgElectronVersion)) {
-			yield rimrafAsync(symbolsPath);
+		if(semver.diff(localVersion, electronVersion)) {
+			await rimraf(symbolsPath);
 			return false;
 		}
 		else {
 			return true;
 		}
-	} catch(err) {
+	} catch (err) {
 		if(err.code !== 'ENOENT') {
 			debug.error(err);
 		}
 		return false
-	}
-});
+	}	
+}
 
-const extractZip = Promise.coroutine(function* (zipPath) {
+async function extractZip(zipPath) {
 	debug('extracting symbols to ', poolPath);
 	const ADMZip = require('adm-zip'); //lazy load this
 
@@ -49,12 +49,12 @@ const extractZip = Promise.coroutine(function* (zipPath) {
 	zip.extractAllTo(poolPath, true);
 	debug('extraction complete');
 
-	yield fs.renameAsync(path.join(poolPath, extractedFolderName), symbolsPath);
+	await fs.renameAsync(path.join(poolPath, extractedFolderName), symbolsPath);
 	debug('symbols folder moved to ', path.join(poolPath, 'symbols'));
 
-	yield fs.unlinkAsync(zipPath);
+	await fs.unlinkAsync(zipPath);
 	debug('temp zip deleted, ', zipPath);
-});
+}
 
 function download() {
 	return new Promise((res, rej) => {

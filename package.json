@@ -28,6 +28,6 @@
     "semver": "^5.3.0"
   },
   "devDependencies": {
-    "electron-prebuilt": "^1.4.2"
+    "electron": "^1.6.11"
   }
 }

@@ -24,7 +24,7 @@ const { app, BrowserWindow } = require('electron');
 let mainWindow = null;
 
 // only run it in local development (check for this however you like)
-if(process.execPath.indexOf('electron-prebuilt') > -1) {
+if(process.execPath.indexOf('electron') > -1) {
   // it handles shutting itself down automatically
   require('electron-local-crash-reporter').start();
 }
