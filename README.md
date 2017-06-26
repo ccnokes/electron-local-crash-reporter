@@ -10,7 +10,7 @@ Add this module as a dev dependency and only run it in local development, and it
 
 This module is helpful if you do not have a remote crash report server running yet, or do not want to send crash reports created in local development to it.
 
-##Install
+## Install
 ```
 npm install --save-dev electron-local-crash-reporter
 ```
